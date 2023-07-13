@@ -13,9 +13,9 @@
           {{days[Day-1]}}
         </div>
       </div>
-      <div v-for="Week in 5" :key="Week" class="row" style=" height: 19% ">
+      <div v-for="Week in 6" :key="Week" class="row" style=" height: 16% ">
         <div v-for="Day in 7" :key="Day" class="col panel border" style="display: block; Height: 19vh">
-          {{(Week - 1)*7 + Day - 1}}
+          {{caculateMonthVal((Week - 1)*7 + Day)}}
         </div>
       </div>
     </div> 
@@ -24,57 +24,143 @@
 </template>
 
 <script>
+/*
+  前端資料:
+    days: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+  後端資料:
+    currentDate: 現在時間
+    year:  年
+    month: 月
+    date:  日
+    monthFirstDay_DayOfWeek: 月的第一天是星期幾
+    lastMonthDays: 上個月有幾天
+    thisMonthDays: 這個月有幾天
+    weekFirstDay = monthFirstDay_DayOfWeek: 這個月的第一天是星期幾
+
+  初始化：
+    getCurrentDate (以月展示) : 同步更新 year, month, date
+    getMonthFirstDay (月的第一天是星期幾)
+    getLastMonthDays (上個月有幾天)
+    getThisMonthDays (這個月有幾天)
+  
+  若月份 +- :
+    -:
+      if month == 0
+        year = year - 1
+        month = 11
+      else
+        month = month - 1
+    +:
+      if month == 11
+        year = year + 1
+        month = 0
+      else
+        month = month + 1
+
+    重新獲取資料：
+      getMonthFirstDay (月的第一天是星期幾)
+      getLastMonthDays (上個月有幾天)
+      getThisMonthDays (這個月有幾天)
+      update weekFirstDay = monthFirstDay_DayOfWeek: 這個月的第一天是星期幾
+  
+  週：
+    +-:
+      +:
+        if weekFirstDay == 6
+          weekFirstDay = 0
+        else
+          weekFirstDay = weekFirstDay + 1
+  前端判段：
+    mounthIndexReturn func(index):
+      將傳進 index -> ((Week - 1)*7 + Day) 
+      if index < monthFirstDay_DayOfWeek
+        return lastMonthDays - monthFirstDay_DayOfWeek + (Week - 1)*7 + Day
+      else if index > monthFirstDay_DayOfWeek && index <= thisMonthDays + monthFirstDay_DayOfWeek
+        return (Week - 1)*7 + Day - monthFirstDay_DayOfWeek
+      else
+        return (Week - 1)*7 + Day - monthFirstDay_DayOfWeek - thisMonthDays
+*/
 export default {
   data() {
     return {
-      // [上個月結束時間點、下個月開始點]
       days: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
-      currentDate: '',
-      year: '',
-      month: '',
-      date: '',
-      firstDay: '',
-      lastMonthDays: '',
-      weekFirstDay: '',
-      weekLastDay: '',
+      currentDate: new Date(),
+      year: 0,
+      month: 0,
+      date: 0,
+      monthFirstDay_DayOfWeek: 0,
+      lastMonthDays: 0,
+      thisMonthDays: 0,
+      weekFirstDay: 0,
     };
   },
   mounted() {
-    this.getDate();
-    this.lastDayOfLastMonth();
+    this.getCurrentDate();
+    this.getMonthFirstDay();
+    this.getLastMonthDays();
+    this.getThisMonthDays();
   },
   methods: {
-    getLastMonthDays() {
-      let month = this.month;
-      let year = this.year;
-      if(this.month == 0)
-        month = 11, year = this.year - 1;
-      else month = this.month - 1; 
-      console.log(month);
-      console.log(year);
-      this.lastMonthDays = new Date(year, month, 0).getDate();
-    },
-    getDate() {
-      this.currentDate = new Date();
+    getCurrentDate() {
       this.year = this.currentDate.getFullYear();
-      this.month = this.currentDate.getMonth() + 1;
+      this.month = this.currentDate.getMonth();
       this.date = this.currentDate.getDate();
+      console.log(this.year);
     },
-    firstDayOfMonth() {
-      this.firstDay = new Date(this.year, this.month - 1, 1);
+    getMonthFirstDay() {
+      this.monthFirstDay_DayOfWeek = new Date(this.year, this.month, 1).getDay();
+      this.weekFirstDay = this.monthFirstDay_DayOfWeek;
     },
-    lastDayOfLastMonth() {
+    getLastMonthDays() {
+      this.lastMonthDays = new Date(this.year, this.month, 0).getDate();
+    },
+    getThisMonthDays() {
+      this.thisMonthDays = new Date(this.year, this.month + 1, 0).getDate();
+    },
+    caculateMonthVal(index) {
+      if (index <= this.monthFirstDay_DayOfWeek) {
+        return this.lastMonthDays - this.monthFirstDay_DayOfWeek + index;
+      } else if (index > this.monthFirstDay_DayOfWeek && index <= this.thisMonthDays + this.monthFirstDay_DayOfWeek) {
+        return index - this.monthFirstDay_DayOfWeek;
+      } else {
+        return index - this.monthFirstDay_DayOfWeek - this.thisMonthDays;
+      }
+    },
+    weekFirstDayAdd() {
+      if (this.weekFirstDay == 6) {
+        this.weekFirstDay = 0;
+      } else {
+        this.weekFirstDay = this.weekFirstDay + 1;
+      }
+    },
+    weekFirstDaySub() {
+      if (this.weekFirstDay == 0) {
+        this.weekFirstDay = 6;
+      } else {
+        this.weekFirstDay = this.weekFirstDay - 1;
+      }
+    },
+    monthAdd() {
+      if (this.month == 11) {
+        this.year = this.year + 1;
+        this.month = 0;
+      } else {
+        this.month = this.month + 1;
+      }
+      this.getMonthFirstDay();
       this.getLastMonthDays();
+      this.getThisMonthDays();
     },
-    getWeekFirstDay() {
-      this.weekFirstDay = this.firstDay.getDay();
-      //this.lastMonthDays = new Date(this.year, this.month - 1, 0).getDate();
+    monthSub() {
+      if (this.month == 0) {
+        this.year = this.year - 1;
+        this.month = 11;
+      } else {
+        this.month = this.month - 1;
+      }
+      this.getMonthFirstDay();
       this.getLastMonthDays();
-      // if this.month == 0 then this.month = 12 
-      // else this.month = this.month - 1
-    },
-    getWeekLastDay() {
-      this.weekLastDay = new Date(this.year, this.month, 0).getDay();
+      this.getThisMonthDays();
     },
   }
 };
