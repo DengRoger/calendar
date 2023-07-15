@@ -1,6 +1,27 @@
 <template>
-<div class="d-flex flex-column justify-content-start m-0" style="height: 10vh;">
-  <!--上10-->
+<div class="row m-0 align-items-center" style="height: 10vh;">
+  <!--上10 set two button calling func monthAdd , monthSub set these buttons at one line -->
+  <div class="col" style="max-width: 20%;">
+    <!-- 上10左20 -->
+  </div>
+  <div class="col" style="max-width: 10%;">
+    <div class="row m-0">
+      <div class="col p-0 border-0">
+        <button type="button" class="btn btn-light border-0"  @click="today">today</button>
+      </div>
+      <div class="col p-0">
+        <button type="button" class="btn btn-light rounded-circle border-0" @click="monthSub">&lt;</button>
+      </div>
+      <div class="col p-0 border-0 p-0">
+        <button type="button" class="btn btn-light rounded-circle border-0" @click="monthAdd">&gt;</button>
+      </div>
+    </div>
+  </div>
+  <div class="col" style="max-width: 20%;">
+    <div class="col d-flex align-items-center p-0">
+      <h3 style="margin: 0%;">{{year}}/{{month + 1}}</h3>
+    </div>
+  </div>
 </div>
 <div class="row" style="width: 100%; height: 90vh;">
   <div class="col" style="max-width: 20%;">
@@ -15,7 +36,8 @@
       </div>
       <div v-for="Week in 6" :key="Week" class="row" style=" height: 16% ">
         <div v-for="Day in 7" :key="Day" class="col panel border" style="display: block; Height: 19vh">
-          {{caculateMonthVal((Week - 1)*7 + Day)}}
+          <span v-if="checkIsToday((Week - 1) * 7 + Day)" style="background-color: rgb(35, 166, 210); color: white; border-radius: 30%;">{{caculateMonthVal((Week - 1)*7 + Day)}}</span>
+          <span v-else>{{ caculateMonthVal((Week - 1) * 7 + Day) }}</span>
         </div>
       </div>
     </div> 
@@ -97,8 +119,12 @@ export default {
   mounted() {
     this.getCurrentDate();
     this.getMonthFirstDay();
+    
     this.getLastMonthDays();
     this.getThisMonthDays();
+    window.alert = function() {
+      return false;
+    };
   },
   methods: {
     getCurrentDate() {
@@ -162,6 +188,19 @@ export default {
       this.getLastMonthDays();
       this.getThisMonthDays();
     },
+    today() {
+      this.getCurrentDate();
+      this.getMonthFirstDay();
+      this.getLastMonthDays();
+      this.getThisMonthDays();
+    },
+    checkIsToday(index) {
+      if (this.year == this.currentDate.getFullYear() && this.month == this.currentDate.getMonth() && this.date == this.caculateMonthVal(index)) {
+        return true;
+      } else {
+        return false;
+      }
+    },
   }
 };
 </script>
@@ -174,5 +213,15 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 0px;
+}
+.today-marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  background-color: blue;
+  border-radius: 50%;
 }
 </style>
