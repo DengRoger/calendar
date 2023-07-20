@@ -45,6 +45,7 @@
         </div>
       </div>
       <div v-for="Week in 6" :key="Week" class="row" style="height: 16%">
+        
         <div v-for="Day in 7" :key="Day" class="col panel border p-0" style="display: block Height: 19%">
           <!-- check if user clicked down here and check if user clicked down and moved to here-->
           <span @mousedown="handleMouseDown(index)"></span>
@@ -54,10 +55,13 @@
           <span v-else>{{ caculateMonthVal((Week - 1) * 7 + Day) }}</span>
         </div>
       </div>
-      <!-- 按鈕-->
-      <button type="button" class="btn btn-light border-0 overlap-btn p-0" style="min-width: 80%; position: absolute; top:14%; left:19%">.</button>
-      <button type="button" class="btn btn-light border-0 overlap-btn" style="min-width: 80%; max-width: 81%;position: absolute; top:28%;">-</button>
-    </div> 
+      
+      <!-- v-for to load button postion , show or not : button[i][0] , left :  button[i][1] px , top : button[i][2] px, length : button[i][3] px, name : button[i][4] px-->
+      <div v-for="(item, idx) in button" :key="idx">
+        <!-- if item[0] == true then show the button-->
+        <button v-if="item[0]" type="button" class="btn btn-primary p-0" :style="{left: item[1] + 'px', top: item[2] + 'px', width: item[3] + 'px',  position: 'absolute'}">{{idx}}</button> 
+      </div> 
+    </div>
   </div>
 </div>
 </template>
@@ -122,7 +126,11 @@ export default {
   data() {
     return {
       // show left top length
-      button: [[false,0,0,0],[false,0,0,0],[false,0,0,0],[false,0,0,0],[false,0,0,0][false,0,0,0]],
+      // get windows height and width
+      // caculate button position
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+      button: [[true,0,0,201,'test'],[true,524.3,0,201,'test'],[true,0,0,0,'test'],[true,0,0,0,'test'],[true,0,0,0,'test'],[true,0,0,0,'test']],
       days: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
       currentDate: new Date(),
       year: 0,
@@ -147,6 +155,13 @@ export default {
     window.alert = function() {
       return false;
     };
+    // 偵測螢幕大小 若有變動則重新計算button位置
+    window.addEventListener('resize', () => {
+      this.windowWidth = window.innerWidth;
+      this.windowHeight = window.innerHeight;
+      this.caculateButtonPosition();
+    });
+    this.caculateButtonPosition();
   },
   methods: {
     getCurrentDate() {
@@ -223,6 +238,7 @@ export default {
         return false;
       }
     },
+    // moving bar function
     handleMouseDown(index) {
       this.mousedown = true;
       this.mousedownIndex = index;
@@ -253,6 +269,15 @@ export default {
 
     },
     caculateButtonPosition(){
+      for(let i = 0; i < 6; i++){
+        if(this.button[i][0]){
+          this.button[i][1] = this.windowWidth*0.2;
+          this.button[i][2] = (this.windowHeight*0.1 + 46) + (this.windowHeight*(0.14399*i));
+          this.button[i][3] = this.windowWidth*0.2;
+        }
+      }
+      
+
 
     }
   }
