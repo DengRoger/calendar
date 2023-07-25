@@ -45,92 +45,28 @@
         </div>
       </div>
       <div v-for="Week in 6" :key="Week" class="row" style="height: 16%">
-        
-        <div v-for="Day in 7" :key="Day" class="col panel border p-0" style="display: block Height: 19%">
-          <!-- check if user clicked down here and check if user clicked down and moved to here-->
-          <span @mousedown="handleMouseDown(index)"></span>
-          <span @mousemove="handleMouseMove(index)"></span>
-          <span @mouseup="handleMouseUp(index)"></span>
-          <span v-if="checkIsToday((Week - 1) * 7 + Day)" style="background-color: rgb(35, 166, 210); color: white; border-radius: 30%;">{{caculateMonthVal((Week - 1)*7 + Day)}}</span>
-          <span v-else>{{ caculateMonthVal((Week - 1) * 7 + Day) }}</span>
+        <div v-for="Day in 7" :key="Day" :id=" ((Week - 1) * 7 + Day)" class="col panel border p-0" style="display: block Height: 19%"
+          @mousedown="handleMouseDown(((Week - 1) * 7 + Day))"
+          @mousemove="handleMouseMove(((Week - 1) * 7 + Day))"
+          @mouseup="handleMouseUp(((Week - 1) * 7 + Day))">
+          <span v-if="checkIsToday((Week - 1) * 7 + Day)" style="user-select: none; background-color: rgb(35, 166, 210); color: white; border-radius: 30%;">{{caculateMonthVal((Week - 1)*7 + Day)}}</span>
+          <span v-else style="user-select: none;" >{{ caculateMonthVal((Week - 1) * 7 + Day) }}</span>
         </div>
       </div>
-      
-      <!-- v-for to load button postion , show or not : button[i][0] , left :  button[i][1] px , top : button[i][2] px, length : button[i][3] px, name : button[i][4] px-->
       <div v-for="(item, idx) in button" :key="idx">
-        <!-- if item[0] == true then show the button-->
-        <button v-if="item[0]" type="button" class="btn btn-primary p-0" :style="{left: item[1] + 'px', top: item[2] + 'px', width: item[3] + 'px',  position: 'absolute'}">{{idx}}</button> 
-      </div> 
+        <button v-if="item[0]" type="button" class="btn btn-primary p-0" :style="{left: item[1] + 'px', top: item[2] + 'px', width: item[3] + 'px',  position: 'absolute'}">{{item[4]}}</button> 
+      </div>
     </div>
   </div>
 </div>
 </template>
 <script>
-/*
-  前端資料:
-    days: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
-  後端資料:
-    currentDate: 現在時間
-    year:  年
-    month: 月
-    date:  日
-    monthFirstDay_DayOfWeek: 月的第一天是星期幾
-    lastMonthDays: 上個月有幾天
-    thisMonthDays: 這個月有幾天
-    weekFirstDay = monthFirstDay_DayOfWeek: 這個月的第一天是星期幾
-
-  初始化：
-    getCurrentDate (以月展示) : 同步更新 year, month, date
-    getMonthFirstDay (月的第一天是星期幾)
-    getLastMonthDays (上個月有幾天)
-    getThisMonthDays (這個月有幾天)
-  
-  若月份 +- :
-    -:
-      if month == 0
-        year = year - 1
-        month = 11
-      else
-        month = month - 1
-    +:
-      if month == 11
-        year = year + 1
-        month = 0
-      else
-        month = month + 1
-
-    重新獲取資料：
-      getMonthFirstDay (月的第一天是星期幾)
-      getLastMonthDays (上個月有幾天)
-      getThisMonthDays (這個月有幾天)
-      update weekFirstDay = monthFirstDay_DayOfWeek: 這個月的第一天是星期幾
-  
-  週：
-    +-:
-      +:
-        if weekFirstDay == 6
-          weekFirstDay = 0
-        else
-          weekFirstDay = weekFirstDay + 1
-  前端判段：
-    mounthIndexReturn func(index):
-      將傳進 index -> ((Week - 1)*7 + Day) 
-      if index < monthFirstDay_DayOfWeek
-        return lastMonthDays - monthFirstDay_DayOfWeek + (Week - 1)*7 + Day
-      else if index > monthFirstDay_DayOfWeek && index <= thisMonthDays + monthFirstDay_DayOfWeek
-        return (Week - 1)*7 + Day - monthFirstDay_DayOfWeek
-      else
-        return (Week - 1)*7 + Day - monthFirstDay_DayOfWeek - thisMonthDays
-*/
 export default {
   data() {
     return {
-      // show left top length
-      // get windows height and width
-      // caculate button position
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
-      button: [[true,0,0,201,'test'],[true,524.3,0,201,'test'],[true,0,0,0,'test'],[true,0,0,0,'test'],[true,0,0,0,'test'],[true,0,0,0,'test']],
+      button: [[false,0,0,201,'test'],[false,524.3,0,201,'noTitle'],[false,0,0,0,'noTitle'],[false,0,0,0,'noTitle'],[false,0,0,0,'noTitle'],[false,0,0,0,'noTitle']],
       days: ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
       currentDate: new Date(),
       year: 0,
@@ -149,13 +85,11 @@ export default {
   mounted() {
     this.getCurrentDate();
     this.getMonthFirstDay();
-    
     this.getLastMonthDays();
     this.getThisMonthDays();
     window.alert = function() {
       return false;
     };
-    // 偵測螢幕大小 若有變動則重新計算button位置
     window.addEventListener('resize', () => {
       this.windowWidth = window.innerWidth;
       this.windowHeight = window.innerHeight;
@@ -168,7 +102,6 @@ export default {
       this.year = this.currentDate.getFullYear();
       this.month = this.currentDate.getMonth();
       this.date = this.currentDate.getDate();
-      console.log(this.year);
     },
     getMonthFirstDay() {
       this.monthFirstDay_DayOfWeek = new Date(this.year, this.month, 1).getDay();
@@ -238,7 +171,6 @@ export default {
         return false;
       }
     },
-    // moving bar function
     handleMouseDown(index) {
       this.mousedown = true;
       this.mousedownIndex = index;
@@ -248,37 +180,69 @@ export default {
     handleMouseMove(index) {
       if (this.mousedown) {
         this.mousemoveIndex = index;
+        this.controlButtonShow();
       }
-      // showing buttons when mouse move
     },
     handleMouseUp(index) {
       if (this.mousedown) {
         this.mousedown = false;
         this.mouseupIndex = index;
+        this.mousemoveIndex = index;
+        this.controlButtonHide();
       }
-      // showing Popover when mouse up 
+    },
+    showButton(startIndex, endIndex) {
 
+      this.caculateButtonPosition();
+      let i ;
+
+      let posD = Math.floor((startIndex-1)/7);
+      let startLine = Math.floor((startIndex-1)/7);
+      let endLine = Math.floor((endIndex-1)/7);
+
+      let left = document.getElementById(startIndex).getBoundingClientRect().x;
+      this.button[posD][1] = left;
+      if (startLine == endLine){
+        this.button[posD][3] = (endIndex - startIndex + 1) * 0.11784 * this.windowWidth;
+      } else {
+        let tmp1 = (startIndex - 1)% 7 + 1;
+        let tmp2 = (endIndex - 1)% 7 + 1;
+        this.button[posD][3] = this.windowWidth*0.11784* (7 - tmp1 + 1);
+        for (let i = startLine + 1; i < endLine; i++){
+          this.button[i][1] = document.getElementById(1).getBoundingClientRect().x;
+          this.button[i][3] = this.windowWidth*0.11784*7;
+        }
+        this.button[endLine][1] = document.getElementById(1).getBoundingClientRect().x;
+        this.button[endLine][3] = this.windowWidth*0.11784* (tmp2);
+      }
+      for (i = 0 ; i <= 5 ; i++){
+        if( i >= Math.floor((startIndex-1)/7) && i <= Math.floor(endIndex-1)/7){              
+          this.button[i][0] = true;
+        } else this.button[i][0] = false;
+      }
     },
     controlButtonShow() {
-      if (this.mousedownIndex > 0  && this.mousedownIndex <= 7 ) this.button[0][0] = true;
-      if (this.mousedownIndex > 7  && this.mousedownIndex <= 14) this.button[1][0] = true;
-      if (this.mousedownIndex > 14 && this.mousedownIndex <= 21) this.button[2][0] = true;
-      if (this.mousedownIndex > 21 && this.mousedownIndex <= 28) this.button[3][0] = true;
-      if (this.mousedownIndex > 28 && this.mousedownIndex <= 35) this.button[4][0] = true;
-      if (this.mousedownIndex > 35 && this.mousedownIndex <= 42) this.button[5][0] = true;
+      if (this.mousedown) {
+        
+        if (this.mousemoveIndex > this.mousedownIndex){
+          this.showButton(this.mousedownIndex, this.mousemoveIndex)
+        } else {
+          this.showButton(this.mousemoveIndex, this.mousedownIndex)
 
+        }
+      }
+    },
+    controlButtonHide(){
+      for(let i = 0; i < 6; i++){
+        this.button[i][0] = false;
+      }
     },
     caculateButtonPosition(){
       for(let i = 0; i < 6; i++){
         if(this.button[i][0]){
-          this.button[i][1] = this.windowWidth*0.2;
           this.button[i][2] = (this.windowHeight*0.1 + 46) + (this.windowHeight*(0.14399*i));
-          this.button[i][3] = this.windowWidth*0.2;
         }
       }
-      
-
-
     }
   }
 };
